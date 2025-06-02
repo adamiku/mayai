@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { authClient } from '@/lib/auth-client';
+import { SocialAuthButtons } from '@/modules/auth/ui/components/social-auth-buttons';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { OctagonAlertIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -29,24 +30,31 @@ const formSchema = z.object({
 type SignInFormSchema = z.infer<typeof formSchema>;
 
 export const SignInView = () => {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const router = useRouter();
 
   const onSubmit = (data: SignInFormSchema) => {
     setError(null);
     setPending(true);
 
-    authClient.signIn.email(data, {
-      onSuccess: () => {
-        router.push('/');
-        setPending(false);
+    authClient.signIn.email(
+      {
+        email: data.email,
+        password: data.password,
+        callbackURL: '/',
       },
-      onError: ({ error }) => {
-        setError(error.message);
-        setPending(false);
-      },
-    });
+      {
+        onSuccess: () => {
+          setPending(false);
+          router.push('/');
+        },
+        onError: ({ error }) => {
+          setError(error.message);
+          setPending(false);
+        },
+      }
+    );
   };
 
   const form = useForm<SignInFormSchema>({
@@ -109,19 +117,7 @@ export const SignInView = () => {
                 <Button type="submit" className="w-full" disabled={pending}>
                   Sign in
                 </Button>
-                <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-                  <span className="bg-card text-muted-foreground relative z-10 px-2">
-                    Or continue with
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <Button variant="outline" className="w-full" type="button" disabled={pending}>
-                    Google
-                  </Button>
-                  <Button variant="outline" className="w-full" type="button" disabled={pending}>
-                    Github
-                  </Button>
-                </div>
+                <SocialAuthButtons callbackURL="/" onError={(message) => setError(message)} />
                 <div className="text-center text-sm">
                   Don&apos;t have an account?{' '}
                   <Link href="/sign-up" className="underline underline-offset-4">
