@@ -20,5 +20,9 @@
   "prettier.tabWidth": 2,
   "prettier.semi": true,
   "prettier.bracketSameLine": false,
-  "typescript.preferences.autoImportFileExcludePatterns": ["@radix-ui/react-*"]
+  "typescript.preferences.autoImportFileExcludePatterns": [
+    "@radix-ui/react-*",
+    "react-day-picker",
+    "cmdk"
+  ]
 }
