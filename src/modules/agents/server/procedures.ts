@@ -2,6 +2,7 @@ import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE, MIN_PAGE_SIZE } from '@
 import { db } from '@/db';
 import { agents } from '@/db/schema';
 import { createTRPCRouter, protectedProcedure } from '@/trpc/init';
+import { TRPCError } from '@trpc/server';
 import { and, count, desc, eq, getTableColumns, ilike, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { agentsInsertSchema } from '../schemas';
@@ -14,8 +15,12 @@ export const agentsRouter = createTRPCRouter({
         meetingCount: sql<number>`5`,
       })
       .from(agents)
-      .where(eq(agents.id, input.id))
+      .where(and(eq(agents.id, input.id), eq(agents.userId, ctx.auth.user.id)))
       .limit(1);
+
+    if (!existingAgent) {
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'Agent not found' });
+    }
 
     return existingAgent;
   }),
